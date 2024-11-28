@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <bits/types/siginfo_t.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -29,23 +28,17 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 		count = 0;
 		c = '\0';
 		c_id = info->si_pid;
-
-		ft_printf("Initialized for process: %d\n", c_id);
 	}
 
 	if (sig == SIGUSR1)
-	{
 		c <<= 1;
-		ft_printf("should process as '0' byte \n");
-	}
-
-	if (sig == SIGUSR2)
+	else
+		c = (c << 1) | 1;
+	if ((++count) == 8)
 	{
-		c <<= 1;
-		c |= 1;
-		ft_printf("should process as '1' byte \n");
+		ft_putchar_fd(c, 1);
+		c_id = -1;
 	}
-	ft_printf("c is now: %d\n", c);
 }
 
 int	main(void)
