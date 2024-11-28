@@ -90,4 +90,6 @@ int		handle_hex(unsigned long n, const char *char_set, char *buffer);
 int		handle_int(int n, char *buffer);
 int		handle_int_u(unsigned int n, char *buffer);
 int		ft_printf(const char *format, ...);
+char	*get_next_line(int fd);
+char	*ft_join(char *buffer, char *buf);
 #endif
