@@ -26,7 +26,7 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 	if (c_id != info->si_pid)
 	{
 		count = 0;
-		c = '\0';
+		c = 0;
 		c_id = info->si_pid;
 	}
 
@@ -37,7 +37,8 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 	if ((++count) == 8)
 	{
 		ft_putchar_fd(c, 1);
-		c_id = -1;
+		count = 0;
+		c = 0;
 	}
 }
 

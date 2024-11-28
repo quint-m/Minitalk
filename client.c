@@ -24,25 +24,14 @@ void	send_byte(int PID, const char c)
 	while (i >= 0)
 	{
 		if (((cc >> i) & 1) == 1)
-		{
 			kill(PID, SIGUSR2);
-			ft_printf("Sending byte %i\n", ((cc >> i) & 1));
-		}
 		else 
-		{
 			kill(PID, SIGUSR1);
-			ft_printf("Sending byte %i\n", ((cc >> i) & 1));
-		}
 		i--;
 		usleep(300);
 	}
 }
 
-/**
- * Send a message to the 'server'
- * SIGUSR1 (byte) 0
- * SIGUSR2 (byte) 1
- */
 void	send_message(int PID, const char *msg)
 {
 	if (!msg)
@@ -51,7 +40,6 @@ void	send_message(int PID, const char *msg)
 	{
 		send_byte(PID, *msg);
 		msg++;
-		//sleep(1);
 	}
 }
 
@@ -65,7 +53,9 @@ int	main(int argc, char **argv)
 		return (1);
 	}
 	PID = ft_atoi(argv[1]);
-	sig = argv[2];
+	sig = ft_strjoin(argv[2], "\0");
 	send_message(PID, sig);
+	send_message(PID, "\n");
+	free(sig);
 	return (0);
 }
