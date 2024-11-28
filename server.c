@@ -20,8 +20,32 @@
 void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 {
 	(void) ucontext;
-	ft_printf("Received signal %d\n", sig);
-	ft_printf("Received code %d\n", info->si_code);
+	static int	c;
+	static int	count;
+	static int	c_id;
+	
+	if (c_id != info->si_pid)
+	{
+		count = 0;
+		c = '\0';
+		c_id = info->si_pid;
+
+		ft_printf("Initialized for process: %d\n", c_id);
+	}
+
+	if (sig == SIGUSR1)
+	{
+		c <<= 1;
+		ft_printf("should process as '0' byte \n");
+	}
+
+	if (sig == SIGUSR2)
+	{
+		c <<= 1;
+		c |= 1;
+		ft_printf("should process as '1' byte \n");
+	}
+	ft_printf("c is now: %d\n", c);
 }
 
 int	main(void)
@@ -32,15 +56,10 @@ int	main(void)
 	sa.sa_sigaction = handle_signal;
 	sigemptyset(&sa.sa_mask);
 
-	if (sigaction(SIGUSR1, &sa, NULL) < 0)
-	{
-		ft_printf("You fucked up\n");
-		exit(1);
-	}
-	ft_printf("Server running and listening on PID: %d...\n", getpid());
+	ft_printf("Minitalk Server Running On PID: %d\n", getpid());
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
-	{
-		sleep(1);
-	}
+		pause();
 	return (0);
 }
