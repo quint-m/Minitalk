@@ -12,7 +12,7 @@
 
 #include <unistd.h>
 #include <signal.h>
-#include "../libft/libft.h"
+#include "libft.h"
 
 void	send_byte(int PID, const char c)
 {
