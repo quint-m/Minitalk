@@ -29,7 +29,6 @@ RED = \033[31m
 RESET = \033[0m
 
 all: $(NAME)
-	@echo "$(GREEN)✅ Building all targets...$(RESET)"
 
 $(NAME): server client
 
@@ -45,7 +44,7 @@ client: client.o libft.a
 
 libft.a:
 	@echo "$(BLUE)📦 Building libft...$(RESET)"
-	make -C libft > /dev/null 2>&1
+	make -C libft
 	mv libft/libft.a libft.a
 	@echo "$(GREEN)✅ libft.a ready!$(RESET)"
 
