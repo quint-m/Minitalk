@@ -19,6 +19,7 @@ static int	g_acknowledged = 0;
 void	send_byte(int PID, const char c)
 {
 	int				i;
+	int				kreturn;
 	unsigned char	cc;
 
 	cc = (unsigned char) c;
@@ -27,9 +28,11 @@ void	send_byte(int PID, const char c)
 	{
 		g_acknowledged = 0;
 		if (((cc >> i) & 1) == 1)
-			kill(PID, SIGUSR2);
+			kreturn = kill(PID, SIGUSR2);
 		else
-			kill(PID, SIGUSR1);
+			kreturn = kill(PID, SIGUSR1);
+		if (kreturn < 0)
+			exit(1);
 		while (g_acknowledged == 0)
 			pause();
 		i--;

@@ -21,6 +21,7 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 	static int	c;
 	static int	count;
 	static int	c_id;
+	int			w_res;
 
 	(void) ucontext;
 	if (c_id != info->si_pid)
@@ -35,10 +36,12 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 		c = (c << 1) | 1;
 	if ((++count) == 8)
 	{
-		ft_putchar_fd(c, 1);
+		w_res = write(1, (char*)(&c), 1);
 		count = 0;
 		c = 0;
 	}
+	if (w_res < 0)
+		exit(1);
 	kill(c_id, SIGUSR1);
 }
 
