@@ -10,8 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <bits/types/siginfo_t.h>
 #include <signal.h>
-#include "libft.h"
+#include "libft/include/libft.h"
+
+static int	g_acknowledged = 0;
 
 void	send_byte(int PID, const char c)
 {
@@ -22,19 +25,21 @@ void	send_byte(int PID, const char c)
 	i = 7;
 	while (i >= 0)
 	{
+		g_acknowledged = 0;
 		if (((cc >> i) & 1) == 1)
 			kill(PID, SIGUSR2);
-		else 
+		else
 			kill(PID, SIGUSR1);
+		while (g_acknowledged == 0)
+			pause();
 		i--;
-		usleep(300);
 	}
 }
 
 void	send_message(int PID, const char *msg)
 {
 	if (!msg)
-		return;
+		return ;
 	while (*msg)
 	{
 		send_byte(PID, *msg);
@@ -42,19 +47,34 @@ void	send_message(int PID, const char *msg)
 	}
 }
 
+static void	handle_response(int signal, siginfo_t *info, void *context)
+{
+	(void)context;
+	(void)info;
+	(void)signal;
+	if (g_acknowledged == 0)
+		g_acknowledged = 1;
+}
+
 int	main(int argc, char **argv)
 {
-	int	PID;
-	char*	sig;
+	int					pid;
+	char				*sig;
+	struct sigaction	sa;
+
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = handle_response;
+	sigemptyset(&sa.sa_mask);
 	if (argc < 3)
 	{
 		ft_printf("Usage: ./client <PID> <Message>\n");
 		return (1);
 	}
-	PID = ft_atoi(argv[1]);
+	sigaction(SIGUSR1, &sa, NULL);
+	pid = ft_atoi(argv[1]);
 	sig = ft_strjoin(argv[2], "\0");
-	send_message(PID, sig);
-	send_message(PID, "\n");
+	send_message(pid, sig);
+	send_message(pid, "\n");
 	free(sig);
 	return (0);
 }

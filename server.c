@@ -18,18 +18,17 @@
 
 void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 {
-	(void) ucontext;
 	static int	c;
 	static int	count;
 	static int	c_id;
-	
+
+	(void) ucontext;
 	if (c_id != info->si_pid)
 	{
 		count = 0;
 		c = 0;
 		c_id = info->si_pid;
 	}
-
 	if (sig == SIGUSR1)
 		c <<= 1;
 	else
@@ -40,16 +39,16 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 		count = 0;
 		c = 0;
 	}
+	kill(c_id, SIGUSR1);
 }
 
 int	main(void)
 {
-	struct	sigaction sa;
+	struct sigaction	sa;
 
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = handle_signal;
 	sigemptyset(&sa.sa_mask);
-
 	ft_printf("Minitalk Server Running On PID: %d\n", getpid());
 	sigaction(SIGUSR1, &sa, NULL);
 	sigaction(SIGUSR2, &sa, NULL);
