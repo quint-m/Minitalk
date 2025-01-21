@@ -11,42 +11,43 @@
 /* ************************************************************************** */
 
 #include <stdlib.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
 #include "libft/include/libft.h"
 
-static void	empty_state(int *c_code, int *b_count)
+static void	empty_state(char *c_code, int *b_count)
 {
-	*c_code = 0;
+	*c_code = '\0';
 	*b_count = 0;
 }
 
 void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 {
-	static int	c;
-	static int	count;
-	static int	c_id;
-	int			w_res;
+	static char		c;
+	static int		count;
+	static pid_t	c_id;
 
 	(void) ucontext;
-	w_res = 0;
 	if (c_id != info->si_pid)
 	{
 		empty_state(&c, &count);
 		c_id = info->si_pid;
 	}
-	if (sig == SIGUSR1)
-		c <<= 1;
-	else
-		c = (c << 1) | 1;
-	if ((++count) == 8)
+	count++;
+	if (sig == SIGUSR2)
+		c |= 1 << (8 - count);
+	if (count == 8)
 	{
-		w_res = write(1, (char *)(&c), 1);
-		empty_state(&c, &count);
+		if (c)
+			write(1, &c, 1);
+		else
+			write(1, "\n", 1);
+		c = '\0';
+		count = 0;
 	}
-	if (w_res < 0)
-		exit(1);
 	kill(c_id, SIGUSR1);
+	return ;
 }
 
 int	main(void)

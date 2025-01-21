@@ -12,34 +12,36 @@
 
 #include <bits/types/siginfo_t.h>
 #include <signal.h>
+#include <unistd.h>
 #include "libft/include/libft.h"
 
-static int	g_acknowledged = 0;
+static volatile int	g_acknowledged = 0;
 
-void	send_byte(int PID, const char c)
+void	send_byte(int PID, unsigned char c)
 {
 	int				i;
 	int				kreturn;
-	unsigned char	cc;
 
-	cc = (unsigned char) c;
-	i = 7;
-	while (i >= 0)
+	i = 0;
+	while (i < 8)
 	{
 		g_acknowledged = 0;
-		if (((cc >> i) & 1) == 1)
+		if ((c & 128) == 128)
 			kreturn = kill(PID, SIGUSR2);
 		else
 			kreturn = kill(PID, SIGUSR1);
 		if (kreturn < 0)
 			exit(1);
-		while (g_acknowledged == 0)
-			pause();
-		i--;
+		c <<= 1;
+		usleep(300);
+		while (!g_acknowledged)
+			if (pause() == -1)
+				usleep(300);
+		i++;
 	}
 }
 
-void	send_message(int PID, const char *msg)
+void	send_message(int PID, char *msg)
 {
 	if (!msg)
 		return ;
@@ -48,6 +50,7 @@ void	send_message(int PID, const char *msg)
 		send_byte(PID, *msg);
 		msg++;
 	}
+	send_byte(PID, '\0');
 }
 
 static void	handle_response(int signal, siginfo_t *info, void *context)
@@ -55,8 +58,7 @@ static void	handle_response(int signal, siginfo_t *info, void *context)
 	(void)context;
 	(void)info;
 	(void)signal;
-	if (g_acknowledged == 0)
-		g_acknowledged = 1;
+	g_acknowledged = 1;
 }
 
 static int	retrieve_pid(const char *pid)
@@ -88,7 +90,6 @@ static int	retrieve_pid(const char *pid)
 int	main(int argc, char **argv)
 {
 	int					pid;
-	char				*sig;
 	struct sigaction	sa;
 
 	sa.sa_flags = SA_SIGINFO;
@@ -101,10 +102,6 @@ int	main(int argc, char **argv)
 	}
 	sigaction(SIGUSR1, &sa, NULL);
 	pid = retrieve_pid(argv[1]);
-	sig = ft_strjoin(argv[2], "\0");
-	if (!sig)
-		return (1);
-	send_message(pid, sig);
-	free(sig);
+	send_message(pid, argv[2]);
 	return (0);
 }
