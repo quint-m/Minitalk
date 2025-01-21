@@ -59,6 +59,32 @@ static void	handle_response(int signal, siginfo_t *info, void *context)
 		g_acknowledged = 1;
 }
 
+static int	retrieve_pid(const char *pid)
+{
+	size_t	i;
+	int		pid_value;
+
+	if (!pid || !pid[0])
+		exit(1);
+	i = 0;
+	while (pid[i])
+	{
+		if (!ft_isdigit(pid[i]))
+		{
+			ft_printf("Illegal PID value: %c\n", pid[i]);
+			exit(1);
+		}
+		i++;
+	}
+	pid_value = ft_atoi(pid);
+	if (pid_value < 0)
+	{
+		ft_printf("PID should be a positive value\n");
+		exit(1);
+	}
+	return (pid_value);
+}
+
 int	main(int argc, char **argv)
 {
 	int					pid;
@@ -68,16 +94,17 @@ int	main(int argc, char **argv)
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = handle_response;
 	sigemptyset(&sa.sa_mask);
-	if (argc < 3)
+	if (argc != 3)
 	{
 		ft_printf("Usage: ./client <PID> <Message>\n");
 		return (1);
 	}
 	sigaction(SIGUSR1, &sa, NULL);
-	pid = ft_atoi(argv[1]);
+	pid = retrieve_pid(argv[1]);
 	sig = ft_strjoin(argv[2], "\0");
+	if (!sig)
+		return (1);
 	send_message(pid, sig);
-	send_message(pid, "\n");
 	free(sig);
 	return (0);
 }

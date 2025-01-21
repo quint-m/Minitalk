@@ -11,10 +11,15 @@
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <signal.h>
-#include "libft.h"
+#include "libft/include/libft.h"
+
+static void	empty_state(int *c_code, int *b_count)
+{
+	*c_code = 0;
+	*b_count = 0;
+}
 
 void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 {
@@ -24,10 +29,10 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 	int			w_res;
 
 	(void) ucontext;
+	w_res = 0;
 	if (c_id != info->si_pid)
 	{
-		count = 0;
-		c = 0;
+		empty_state(&c, &count);
 		c_id = info->si_pid;
 	}
 	if (sig == SIGUSR1)
@@ -36,9 +41,8 @@ void	handle_signal(int sig, siginfo_t *info, void *ucontext)
 		c = (c << 1) | 1;
 	if ((++count) == 8)
 	{
-		w_res = write(1, (char*)(&c), 1);
-		count = 0;
-		c = 0;
+		w_res = write(1, (char *)(&c), 1);
+		empty_state(&c, &count);
 	}
 	if (w_res < 0)
 		exit(1);
